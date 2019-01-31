@@ -4,11 +4,8 @@ ISR(PCINT0_vect)
 {
   cli();
   char cur = PINB & 0b00111111;
-  if (cur != last)
-  {
-    last = cur;
-    Serial.print(cur);
-  }
+
+  Serial.print(cur);
 
   sei();
 }
