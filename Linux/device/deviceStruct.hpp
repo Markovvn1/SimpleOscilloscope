@@ -44,14 +44,6 @@ struct __Device
 	queue<long long> qReadTime;
 };
 
-struct __DeviceI2C
-{
-	const char* fileName;
-	int addr;
-
-	unsigned char deviceId = 0;
-};
-
 struct __DeviceUART
 {
 	const char* fileName;
