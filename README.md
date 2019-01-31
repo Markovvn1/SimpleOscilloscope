@@ -17,6 +17,7 @@
 ## Модификации
 При необходимости бОльшего числа каналов (легко увеличить до 8 каналов) можно немного изменить скетч на Arduino и подправить константу CHANNEL_COUNT в main.cpp, после чего пересобрать программу.
 
+## Внешний вид
 <div align="center">
   <img src="http://vova.tom.ru/github/SimpleOscilloscope/Analize.png"><br>
   <img src="http://vova.tom.ru/github/SimpleOscilloscope/AnalizeScale.png"><br>
