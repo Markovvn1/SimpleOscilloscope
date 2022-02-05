@@ -1,4 +1,4 @@
-#include "logs.hpp"
+#include <logs/logs.hpp>
 
 #define STORE_CURSOR        printf("\033[s")
 #define RESET_CURSOR        printf("\033[u")

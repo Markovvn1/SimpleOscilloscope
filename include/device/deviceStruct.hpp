@@ -49,3 +49,8 @@ struct __DeviceUART
 	const char* fileName;
 	int deviceId = 0;
 };
+
+
+struct __DeviceFake
+{
+};

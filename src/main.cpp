@@ -1,9 +1,9 @@
 #include <iostream>
 #include <vector>
 #include <opencv2/opencv.hpp>
-#include "device/device.hpp"
-#include "logs/logs.hpp"
-#include "timer.hpp"
+#include <device/device.hpp>
+#include <logs/logs.hpp>
+#include <timer.hpp>
 #include <unistd.h>
 #include <cmath>
 
@@ -13,14 +13,14 @@ using namespace cv;
 #define CHANNEL_COUNT 6
 
 #define WINDOW1_HEIGHT 30
-#define WINDOW1_WIDTH 860 // Вокруг всего изображения
-#define WINDOW1_BORDER1 20 // Между каналами
-#define WINDOW1_BORDER2 8
+#define WINDOW1_WIDTH 860
+#define WINDOW1_BORDER1 20 // Вокруг всего изображения
+#define WINDOW1_BORDER2 8 // Между каналами
 
 #define WINDOW2_HEIGHT 100
-#define WINDOW2_WIDTH 560 // Вокруг всего изображения
-#define WINDOW2_BORDER1 20 // Между каналами
-#define WINDOW2_BORDER2 20
+#define WINDOW2_WIDTH 560
+#define WINDOW2_BORDER1 20 // Вокруг всего изображения
+#define WINDOW2_BORDER2 20 // Между каналами
 
 #define IMAGE1_WIDTH WINDOW1_WIDTH + 2 * WINDOW1_BORDER1
 #define IMAGE1_HEIGHT WINDOW1_HEIGHT * CHANNEL_COUNT + WINDOW1_BORDER2 * (CHANNEL_COUNT - 1) + 2 * WINDOW1_BORDER1
@@ -111,7 +111,7 @@ void myMouseCallback1(int event, int x, int y, int flags, void* param)
 {
 	if (!programStart) return;
 
-	if (event == CV_EVENT_MOUSEMOVE && ((flags & CV_EVENT_FLAG_LBUTTON) == CV_EVENT_FLAG_LBUTTON))
+	if (event == EVENT_MOUSEMOVE && ((flags & EVENT_FLAG_LBUTTON) == EVENT_FLAG_LBUTTON))
 	{
 		if (x < WINDOW1_BORDER1 || x >= IMAGE1_WIDTH - WINDOW1_BORDER1) return;
 		long long tx = (IMAGE1_WIDTH - WINDOW1_BORDER1 - 1 - x) * MAX_SCALE / (WINDOW1_WIDTH - 1);
@@ -125,7 +125,7 @@ void myMouseCallback2(int event, int x, int y, int flags, void* param)
 {
 	if (!programStart) return;
 
-	if (event == CV_EVENT_MOUSEWHEEL)
+	if (event == EVENT_MOUSEHWHEEL)
 	{
 		int value = getMouseWheelDelta(flags);
 		offset += value * scale / 40;
@@ -142,9 +142,10 @@ int main(int argc, char* argv[])
 	else
 		file_name = argv[1];
 
-	DeviceUART device(file_name.c_str(), true);
-	device.start(TRY_NO);
-	if (!device.isActive())
+	// Device* device = new DeviceUART(file_name.c_str(), true);
+	Device* device = new DeviceFake();
+	device->start(TRY_NO);
+	if (!device->isActive())
 	{
 		logError("Не удалось установить соединение с arduino");
 		return 1;
@@ -182,12 +183,12 @@ int main(int argc, char* argv[])
 	char lastd = 0;
 	while (true)
 	{
-		while (device.available())
+		while (device->available())
 		{
-			if (!programStart) startTime = device.getReadTime() - MAX_SCALE;
+			if (!programStart) startTime = device->getReadTime() - MAX_SCALE;
 
-			long long t = device.getReadTime() - startTime - offsetTime;
-			char d = device.read();
+			long long t = device->getReadTime() - startTime - offsetTime;
+			char d = device->read();
 
 			for (int i = 0; i < CHANNEL_COUNT; i++)
 			{
@@ -212,6 +213,7 @@ int main(int argc, char* argv[])
 
 		long long ctime = sleepMode ? sleepModeStart : (getCTNanosecond() - startTime - offsetTime);
 		scale = scaleB * pow(scaleA, 400 - ts);
+		// printf("scale: %lld\n", scale);
 		checkOffset();
 
 		rectangle(frameBig,
@@ -225,8 +227,19 @@ int main(int argc, char* argv[])
 			events[i].draw(frameBig, rectsBig[i], ctime, MAX_SCALE, Scalar(236, 252, 199));
 		}
 
+		long long xgrid_scale = 10;  // расстояние между временными метками в ns
+		for (; xgrid_scale < MAX_SCALE; xgrid_scale *= 10) {
+			if (scale / xgrid_scale < 21) break;
+		}
+
+		for (int i = 0; i <= scale / xgrid_scale; i++) {
+			int x = WINDOW2_BORDER1 + WINDOW2_WIDTH - WINDOW2_WIDTH * (i * xgrid_scale) / scale;
+			line(frameSmall, Point(x, WINDOW2_BORDER1), Point(x, IMAGE2_HEIGHT - WINDOW2_BORDER1), Scalar(21, 138, 171, 200), 1);
+		}
+
 		imshow("Analize", frameBig);
 		imshow("AnalizeScale", frameSmall);
+		setWindowTitle("AnalizeScale", "AnalizeScale (" + to_string(xgrid_scale / 1000) + " µs)");
 		int key = waitKey(33);
 
 		if (key == 32)
@@ -240,7 +253,8 @@ int main(int argc, char* argv[])
 		}
 	}
 
-	device.stop();
+	device->stop();
+	delete device;
 
 	return 0;
 }

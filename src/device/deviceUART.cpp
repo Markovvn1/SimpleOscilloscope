@@ -1,4 +1,4 @@
-#include "deviceStruct.hpp"
+#include <device/deviceStruct.hpp>
 
 
 

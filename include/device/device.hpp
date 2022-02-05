@@ -11,6 +11,7 @@ typedef int (*DeviceEventOnRead)(unsigned int lenght);
 struct __Device;
 struct __DeviceI2C;
 struct __DeviceUART;
+struct __DeviceFake;
 
 class Device
 {
@@ -47,4 +48,14 @@ public:
 	DeviceUART();
 	DeviceUART(const char* fileName, bool needTime = false);
 	~DeviceUART();
+};
+
+class DeviceFake : public Device
+{
+protected:
+	std::shared_ptr<__DeviceFake> dataFake;
+
+public:
+	DeviceFake();
+	~DeviceFake();
 };
