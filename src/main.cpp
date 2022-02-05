@@ -142,8 +142,8 @@ int main(int argc, char* argv[])
 	else
 		file_name = argv[1];
 
-	// Device* device = new DeviceUART(file_name.c_str(), true);
-	Device* device = new DeviceFake();
+	Device* device = new DeviceUART(file_name.c_str(), true);
+	// Device* device = new DeviceFake();
 	device->start(TRY_NO);
 	if (!device->isActive())
 	{
